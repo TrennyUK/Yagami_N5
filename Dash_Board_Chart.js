@@ -3,126 +3,181 @@ google.charts.load("current", { packages: ["corechart"] });
 
 // ───── Biến cấu hình Google Sheets ─────
 const API_KEY = 'AIzaSyA1fRhQE_tbpwr0w7mc4kYWPWeGpN2I4-k';
-const SHEET_ID_NAMES = '1AHRxpnfFQ4dUUDR7eZ_u5XnDeOPBF7Npu_5_yefjvOY';
-const SHEET_ID_HOURS = '1eRodhcIJNIvp05O8h-ilXBuzwRglCSOkVrqjTIizshU';
-const RANGE_NAMES = 'Day 1!C5:C49';
+
+// >>> BỔ SUNG: Dùng lại cấu trúc sheetLinks đã được cung cấp trước đó <<<
+// Điều này giúp chúng ta lấy ID sheet dựa trên tên tháng
+const sheetLinks = {
+    "January": "1AHRxpnfFQ4dUUDR7eZ_u5XnDeOPBF7Npu_5_yefjvOY",
+    "February": "1tFqtM85jGnYKkp9g66kU1P3b-i2m1ogvXwW4g3GWnBE",
+    "March": "1ISm_M_CoSaNsj4M7FHvtsWdATffm6fpzQlK4ilixOXE",
+    "April": "16FQuJdawLMBZFDYDttPok9w0gspGeQwjWj6AhXYT9SY",
+    "May": "1Tb7LoLE8fl0_BBwNaETHxa4r-SucpDCkZB-x1ZgI7RM",
+    "June": "1BHkoTHSQSGzM0mzP_gdP5KlWOzbe5WPLNeeh9GrndWM",
+    "July": "1hg0KtaI0mehWa_wN3aJo58hXod8YEwtjpbMloQMlpYw",
+    "August": "1bT75iLrwQ-57N_F_t2NJDXOnsfyPUAjWNirdU1tqvPs",
+    "September": "1urf6zMZmuRWISfAwZ03grbFd63dJME01SC3QSwBF9Hs",
+    "October": "1Rk-UMU5P_s9n1Dv8h4TGhza837FyWJW9pskU7reFrAY",
+    "November": "10DfqF2uI7-yDqbkXivYUixetoTa10902pgswxCUOEmk",
+    "December": "1lKXzR_VWg4MJfz3-Sfaxswz6YT2AaIGSfpW_moDui9c"
+};
+
+// >>> CHÚ Ý: Cần biến global `currentMonthName` được định nghĩa và cập nhật từ script trước đó <<<
+// Ví dụ: let currentMonthName = "January"; // Định nghĩa ở file script chính của bạn
 
 // ───── Hàm fetch lương từ Google Sheets theo tháng ─────
 // 📌 sheetId: ID file Sheets ứng với từng tháng
 // 📌 sheetName: "Month 1", "Month 2", v.v...
-// 📌 Lấy giá trị từ ô AM35 và hiển thị vào .salary
+// 📌 Lấy giá trị từ ô AN50 và hiển thị vào .salary
 function fetchSalaryFromSheet(sheetId, sheetName) {
-    const CELL = 'AN50';
+    const CELL = 'AN50'; // Ô chứa lương tổng
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName)}!${CELL}?key=${API_KEY}`;
     
     fetch(url)
         .then(response => {
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
             return response.json();
         })
         .then(data => {
             const value = data.values?.[0]?.[0] ?? "";
 
-            // THAY ĐỔI Ở ĐÂY:
-            // 1. Loại bỏ tất cả các ký tự không phải số (trừ dấu chấm thập phân cuối cùng nếu có)
-            // Hoặc đơn giản hơn, loại bỏ tất cả dấu chấm và sau đó chuyển đổi
             let cleanedValue = value.toString().replace(/\./g, ''); // Loại bỏ tất cả dấu chấm (phân cách hàng nghìn)
             cleanedValue = cleanedValue.replace(',', '.'); // Đảm bảo dấu phẩy thập phân được chuyển thành dấu chấm
 
             const numeric = parseFloat(cleanedValue);
 
             if (!isNaN(numeric)) {
-                // ✅ Nếu là số hợp lệ → hiển thị đẹp
-                // Sử dụng toLocaleString() để định dạng lại số theo chuẩn VN (có dấu chấm phân cách hàng nghìn)
                 document.querySelector('.salary').textContent = `${numeric.toLocaleString('vi-VN')} đ`;
             } else {
-                // ❓ Nếu không phải số → giữ nguyên nội dung gốc hoặc hiện "Dữ Liệu?"
                 document.querySelector('.salary').textContent = value || "Dữ Liệu?";
             }
         })
         .catch(error => {
-            // ❌ Nếu lỗi API hoặc mạng → hiện chữ vui vẻ "Tohoho!"
             console.error('❌ Lỗi khi lấy dữ liệu Google Sheets:', error);
             document.querySelector('.salary').textContent = "Tohoho!";
         });
 }
 
-
-
 // ───── Hàm khởi động chính khi DOM sẵn sàng ─────
 document.addEventListener("DOMContentLoaded", () => {
-  initCalendarTop();
-  setCalendarDateRange();
-  setupMonthClickHandler();
-  google.charts.setOnLoadCallback(drawChart);
+    // Các hàm này cần được định nghĩa ở đâu đó trong code của bạn
+    // initCalendarTop();
+    // setCalendarDateRange();
+    // setupMonthClickHandler();
+
+    // Gọi hàm tự động chọn tháng và cập nhật dữ liệu khi DOM sẵn sàng
+    autoSelectCurrentMonth(); // Điều này sẽ gọi drawChart và fetchSalaryFromSheet lần đầu
+    google.charts.setOnLoadCallback(drawChart); // Đảm bảo chart được vẽ sau khi Google Charts sẵn sàng
 });
 
 // ───── Hàm tự động chọn tháng hiện tại khi mở web ─────
+// Hàm này sẽ thiết lập tháng ban đầu và kích hoạt fetch dữ liệu
 function autoSelectCurrentMonth() {
-  const now = new Date();
-  const currentMonthIndex = now.getMonth(); // 0–11
-  const monthList = document.querySelectorAll('#monthList li');
-  const monthName = monthList[currentMonthIndex].textContent;
+    const now = new Date();
+    const currentMonthIndex = now.getMonth(); // 0–11 (January is 0)
+    
+    // Cần đảm bảo `originalMonths` đã được định nghĩa ở đâu đó (ví dụ: trong script quản lý lịch)
+    const originalMonths = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const monthName = originalMonths[currentMonthIndex]; // Lấy tên tháng
 
-  document.querySelector('#selectedMonth .month-text').textContent = monthName;
+    // Cập nhật biến global `currentMonthName` (nếu bạn có)
+    // Nếu `currentMonthName` là biến của một script khác, hãy đảm bảo nó có thể truy cập được hoặc truyền nó
+    if (typeof currentMonthName !== 'undefined') {
+        currentMonthName = monthName;
+    }
 
-  const year = now.getFullYear();
-  const start = `01/${currentMonthIndex + 1}/${year}`;
-  const endDate = new Date(year, currentMonthIndex + 1, 0);
-  const end = `${endDate.getDate()}/${currentMonthIndex + 1}/${year}`;
+    // Cập nhật giao diện
+    const selectedMonthElement = document.querySelector('#selectedMonth');
+    if (selectedMonthElement) {
+        selectedMonthElement.textContent = monthName; // Cập nhật text của element #selectedMonth
+    }
+    
+    const year = now.getFullYear();
+    const start = `01/${(currentMonthIndex + 1).toString().padStart(2, '0')}/${year}`;
+    const endDate = new Date(year, currentMonthIndex + 1, 0);
+    const end = `${endDate.getDate()}/${(currentMonthIndex + 1).toString().padStart(2, '0')}/${year}`;
 
-  document.getElementById('start-day').textContent = start;
-  document.getElementById('end-day').textContent = end;
+    const startDayElement = document.getElementById('start-day');
+    const endDayElement = document.getElementById('end-day');
+    if (startDayElement) startDayElement.textContent = start;
+    if (endDayElement) endDayElement.textContent = end;
 
-  // Gọi cập nhật lương khi mở web
-  fetchSalaryFromSheet(SHEET_ID_HOURS, `Month ${currentMonthIndex + 1}`);
+    // Kích hoạt vẽ biểu đồ và fetch lương cho tháng hiện tại
+    // drawChart() sẽ tự gọi fetchSalaryFromSheet bên trong nó
+    drawChart();
 }
-
 
 // ───── Hàm lấy dữ liệu từ Google Sheets ─────
 async function fetchSheetData(sheetId, range) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${API_KEY}`;
-  const res = await fetch(url);
-  const json = await res.json();
-  return json.values || [];
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${API_KEY}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+    const json = await res.json();
+    return json.values || [];
 }
-
-
 
 // ───── Vẽ biểu đồ Google Chart (Chuẩn hóa + Khớp màu nhãn) ─────
 async function drawChart() {
     const chartContainer = document.getElementById('chart_inner');
+    if (!chartContainer) {
+        console.error("Không tìm thấy phần tử 'chart_inner'. Không thể vẽ biểu đồ.");
+        return;
+    }
     chartContainer.innerHTML = '<div class="loading-text">Đang tải dữ liệu...</div>';
 
     try {
-        const startDayText = document.getElementById("start-day").textContent;
+        const startDayText = document.getElementById("start-day")?.textContent;
+        if (!startDayText) {
+            throw new Error("Không tìm thấy ngày bắt đầu. Đảm bảo 'start-day' được cập nhật.");
+        }
         const monthNumber = parseInt(startDayText.split("/")[1]);
-        const RANGE_HOURS_DYNAMIC = `Month ${monthNumber}!AJ5:AJ49`;
+        
+        // >>> SỬA LỖI: Lấy sheetId động cho tháng hiện tại <<<
+        // Giả sử `currentMonthName` là biến global hoặc được truyền vào
+        // Và `sheetLinks` cũng là biến global hoặc được truyền vào
+        const currentMonthNameForData = originalMonths[monthNumber - 1]; // Lấy tên tháng từ số tháng
+        const currentSheetId = sheetLinks[currentMonthNameForData];
 
+        if (!currentSheetId) {
+            throw new Error(`Không tìm thấy Sheet ID cho tháng: ${currentMonthNameForData}.`);
+        }
+
+        // RANGE_NAMES: Đây là tên của cột chứa tên nhân viên (vd: C5:C49).
+        // Có thể cần một Sheet ID riêng cho danh sách tên, hoặc nó cũng nằm trong Sheet ID của tháng.
+        // Giả sử tên nhân viên nằm trong cùng sheet của tháng.
+        const RANGE_NAMES_DYNAMIC = `Day 1!C5:C49`; // Hoặc bạn cần một cách linh hoạt hơn cho Day 1
+        const RANGE_HOURS_DYNAMIC = `Day 1!AJ5:AJ49`; // Hoặc bạn cần một cách linh hoạt hơn cho Day 1
+
+        // Thay vì SHEET_ID_NAMES và SHEET_ID_HOURS cố định, dùng currentSheetId
         const [namesRaw, hoursRaw] = await Promise.all([
-            fetchSheetData(SHEET_ID_NAMES, RANGE_NAMES),
-            fetchSheetData(SHEET_ID_HOURS, RANGE_HOURS_DYNAMIC)
+            fetchSheetData(currentSheetId, RANGE_NAMES_DYNAMIC),
+            fetchSheetData(currentSheetId, RANGE_HOURS_DYNAMIC)
         ]);
 
-        const names = namesRaw.flat();
+        const names = namesRaw.flat().filter(name => name && name.trim() !== ''); // Lọc tên trống
         const hours = hoursRaw.map(row =>
-            row[0] !== undefined ? parseFloat(row[0].replace(',', '.')) : 0
+            row[0] !== undefined ? parseFloat(row[0].toString().replace(',', '.')) : 0
         );
+
+        // Đảm bảo hours có ít nhất 1 giá trị để tránh lỗi Math.max
         const maxHour = Math.max(...hours, 1);
 
         const rawData = [['ID', 'Tên', 'Giờ làm', { role: 'annotation' }, { role: 'style' }]];
-        const nameToColorMap = {};
+        // nameToColorMap không được sử dụng trực tiếp để tô màu nhãn trục, nhưng vẫn hữu ích nếu bạn muốn
+        const nameToColorMap = {}; 
 
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < names.length; i++) { // Lặp qua số lượng tên thực tế
             const name = names[i]?.trim() || `Người ${i + 1}`;
             const hour = typeof hours[i] === 'number' && !isNaN(hours[i]) ? hours[i] : 0;
 
             const percent = (hour / maxHour) * 100;
-            let color = '#c3aef1';
-            if (percent >= 40) color = '#f8d936';
-            if (percent >= 80) color = '#3bd7e5';
+            let color = '#c3aef1'; // Default
+            if (percent >= 40) color = '#f8d936'; // Vàng
+            if (percent >= 80) color = '#3bd7e5'; // Xanh lam
 
-            nameToColorMap[name] = color;
+            nameToColorMap[name] = color; // Lưu màu cho tên
 
             rawData.push([
                 `ID ${i + 1}`,
@@ -131,6 +186,13 @@ async function drawChart() {
                 hour.toString(),
                 color
             ]);
+        }
+        
+        // Nếu không có dữ liệu, hiển thị thông báo
+        if (rawData.length <= 1) { // Chỉ có hàng tiêu đề
+            chartContainer.innerHTML = '<div class="loading-text">Không có dữ liệu giờ làm cho tháng này.</div>';
+            document.querySelector('.salary').textContent = "Không có dữ liệu";
+            return;
         }
 
         const data = google.visualization.arrayToDataTable(rawData);
@@ -142,7 +204,8 @@ async function drawChart() {
         ]);
 
         const baseWidthPerPerson = 130;
-        const width = Math.max(400, (rawData.length - 1) * baseWidthPerPerson);
+        // Tính chiều rộng dựa trên số lượng người có dữ liệu
+        const width = Math.max(400, (names.length) * baseWidthPerPerson);
 
         chartContainer.innerText = '';
         const chartDiv = document.createElement('div');
@@ -187,38 +250,41 @@ async function drawChart() {
         setTimeout(() => { chartContainer.scrollLeft = 0; }, 100);
 
         // Lấy lương
-        const sheetName = `Month ${monthNumber}`;
-        if (!/^Month \d+$/.test(sheetName)) throw new Error("Tên sheet không hợp lệ!");
-        fetchSalaryFromSheet(SHEET_ID_HOURS, sheetName);
+        // sheetName ở đây không thực sự cần thiết, bạn có thể truyền thẳng `Day 1` hoặc `Month X` tùy cấu trúc sheets
+        // QUA QUAN TRỌNG: Gọi `fetchSalaryFromSheet` với `currentSheetId` đã tìm được
+        fetchSalaryFromSheet(currentSheetId, `Day 1`); // Giả sử lương tổng nằm ở Day 1 của mỗi tháng
 
         // Gán màu chính xác cho tên nhân viên dưới cột
         setTimeout(() => {
-    const chartTexts = document.querySelectorAll('#chart_inner svg text');
+            const chartTexts = document.querySelectorAll('#chart_inner svg text');
 
-    chartTexts.forEach(text => {
-        const name = text.textContent.trim();
+            chartTexts.forEach(text => {
+                const name = text.textContent.trim();
+                const isLabel = (
+                    text.getAttribute('text-anchor') === 'middle' &&
+                    name !== '' &&
+                    !/^giờ làm|tên nhân viên|giờ làm mỗi người/i.test(name) && // Loại trừ tiêu đề trục
+                    text.getAttribute('fill')?.toLowerCase() !== '#000000' // Đảm bảo không phải annotation value
+                );
 
-        const isLabel = (
-            text.getAttribute('text-anchor') === 'middle' &&
-            name !== '' &&
-            !/^giờ làm|tên nhân viên|giờ làm mỗi người/i.test(name) &&
-            text.getAttribute('fill')?.toLowerCase() !== '#000000'
-        );
+                if (isLabel && nameToColorMap[name]) { // Chỉ áp dụng màu nếu tên có trong map
+                    // Không đổi màu fill ở đây vì màu đã được gán qua 'role: style' trong rawData
+                    // Nếu bạn muốn nhãn trục cũng đổi màu theo cột, bạn có thể uncomment dòng dưới
+                    // text.setAttribute('fill', nameToColorMap[name]); 
+                }
+                if (isLabel) { // Vẫn áp dụng font và size cho tất cả các nhãn trục hợp lệ
+                    text.setAttribute('font-size', '20');
+                    text.setAttribute('font-family', 'Baloo 2');
+                    text.setAttribute('font-weight', 'bold');
+                }
+            });
 
-        if (isLabel) {
-            text.setAttribute('font-size', '20');
-            text.setAttribute('font-family', 'Baloo 2');
-            text.setAttribute('font-weight', 'bold');
-            // Không đổi màu fill để giữ nguyên màu bar (nếu có)
-        }
-    });
-
-    chartContainer.scrollLeft = 0;
-}, 500);
-
+            chartContainer.scrollLeft = 0;
+        }, 500);
 
     } catch (err) {
         console.error('❌ Lỗi khi tải dữ liệu từ Sheets API:', err);
-        chartContainer.innerText = 'Lỗi khi tải dữ liệu.';
+        chartContainer.innerText = `Lỗi khi tải dữ liệu: ${err.message}. Vui lòng kiểm tra API Key và ID Sheets.`;
+        document.querySelector('.salary').textContent = "Lỗi!";
     }
 }
