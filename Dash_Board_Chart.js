@@ -10,11 +10,11 @@ const RANGE_NAMES = 'Day 1!C5:C49';
 // ───── Hàm fetch lương từ Google Sheets theo tháng ─────
 // 📌 sheetId: ID file Sheets ứng với từng tháng
 // 📌 sheetName: "Month 1", "Month 2", v.v...
-// 📌 Lấy giá trị từ ô AN35 và hiển thị vào .salary
+// 📌 Lấy giá trị từ ô AM35 và hiển thị vào .salary
 function fetchSalaryFromSheet(sheetId, sheetName) {
     const CELL = 'AN50';
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName)}!${CELL}?key=${API_KEY}`;
-
+    
     fetch(url)
         .then(response => {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
