@@ -4,22 +4,6 @@ google.charts.load("current", { packages: ["corechart"] });
 // ───── Biến cấu hình Google Sheets ─────
 const API_KEY = 'AIzaSyA1fRhQE_tbpwr0w7mc4kYWPWeGpN2I4-k';
 
-// >>> BỔ SUNG: Dùng lại cấu trúc sheetLinks đã được cung cấp trước đó <<<
-// Điều này giúp chúng ta lấy ID sheet dựa trên tên tháng
-const sheetLinks = {
-    "January": "1AHRxpnfFQ4dUUDR7eZ_u5XnDeOPBF7Npu_5_yefjvOY",
-    "February": "1tFqtM85jGnYKkp9g66kU1P3b-i2m1ogvXwW4g3GWnBE",
-    "March": "1ISm_M_CoSaNsj4M7FHvtsWdATffm6fpzQlK4ilixOXE",
-    "April": "16FQuJdawLMBZFDYDttPok9w0gspGeQwjWj6AhXYT9SY",
-    "May": "1Tb7LoLE8fl0_BBwNaETHxa4r-SucpDCkZB-x1ZgI7RM",
-    "June": "1BHkoTHSQSGzM0mzP_gdP5KlWOzbe5WPLNeeh9GrndWM",
-    "July": "1hg0KtaI0mehWa_wN3aJo58hXod8YEwtjpbMloQMlpYw",
-    "August": "1bT75iLrwQ-57N_F_t2NJDXOnsfyPUAjWNirdU1tqvPs",
-    "September": "1urf6zMZmuRWISfAwZ03grbFd63dJME01SC3QSwBF9Hs",
-    "October": "1Rk-UMU5P_s9n1Dv8h4TGhza837FyWJW9pskU7reFrAY",
-    "November": "10DfqF2uI7-yDqbkXivYUixetoTa10902pgswxCUOEmk",
-    "December": "1lKXzR_VWg4MJfz3-Sfaxswz6YT2AaIGSfpW_moDui9c"
-};
 
 // >>> CHÚ Ý: Cần biến global `currentMonthName` được định nghĩa và cập nhật từ script trước đó <<<
 // Ví dụ: let currentMonthName = "January"; // Định nghĩa ở file script chính của bạn
