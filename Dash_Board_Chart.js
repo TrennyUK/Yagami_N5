@@ -2,7 +2,7 @@
 google.charts.load("current", { packages: ["corechart"] });
 
 // ───── Biến cấu hình Google Sheets ─────
-const API_KEY = 'AIzaSyA1fRhQE_tbpwr0w7mc4kYWPWeGpN2I4-k';
+const API_KEY = 'AIzaSyD_8e_o9ErlKIY_0Z_1KbUsxFOl2vLDEfc';
 const SHEET_ID_NAMES = '11QGch7ghMfThmF9cz8zgnQweHsWu9wrPPQloXz1kz5M';
 const SHEET_ID_HOURS = '1uIU21ZVrdAzC6SwvsYDrbRh5gL4aB2tsMIeUyJ5RvCs';
 const RANGE_NAMES = 'Day 1!C5:C49';
