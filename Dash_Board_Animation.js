@@ -66,7 +66,7 @@ setInterval(() => {
 document.getElementById("goToYearLink").addEventListener("click", function (e) {
   e.preventDefault(); // Chặn hành vi mặc định của thẻ <a>
 
-  const url = "https://docs.google.com/spreadsheets/d/1uIU21ZVrdAzC6SwvsYDrbRh5gL4aB2tsMIeUyJ5RvCs/edit?gid=991805121#gid=991805121";
+  const url = "https://docs.google.com/spreadsheets/d/1eRodhcIJNIvp05O8h-ilXBuzwRglCSOkVrqjTIizshU/";
 
   // Mở với tên cố định: nếu tab đó đã mở, sẽ chuyển đến tab đó
   window.open(url, "SalaryYearTab");
